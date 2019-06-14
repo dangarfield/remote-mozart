@@ -1,0 +1,9 @@
+{
+    "apps": [{
+        "name": "worker",
+        "script": "npm",
+        "args": "start",
+        "watch": ["worker.js"],
+        "env": {}
+    }]
+}

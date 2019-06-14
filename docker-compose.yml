@@ -1,0 +1,42 @@
+version: "3"
+services:
+  worker:
+    image: dangarfield/docker-mozart-worker:latest
+    # depends_on:
+    #   - master
+    volumes:
+      - ./data:/data:cached
+    environment:
+      - DEVICE_GROUP
+      - DEVICE_NAME
+      - MASTER_URL
+      - MASTER_USERNAME
+      - MASTER_PASSWORD
+    networks:
+      - docker-mozart
+    restart: always
+  master:
+    image: dangarfield/docker-mozart-master:latest
+    depends_on:
+      - db
+    volumes:
+      - ./data:/data:cached
+    ports:
+      - 3000:3000
+    environment:
+      - DB_ADDRESS
+      - MASTER_USERNAME
+      - MASTER_PASSWORD
+    networks:
+      - docker-mozart
+    restart: always
+  db:
+    image: mvertes/alpine-mongo:latest
+    volumes:
+      - ./master-db:/data/db:cached
+    networks:
+      - docker-mozart
+    restart: always
+
+networks:
+  docker-mozart:

@@ -1,0 +1,18 @@
+version: "3"
+services:
+  worker:
+    build: ./worker
+    volumes:
+      - ./worker:/app:cached
+      - ./example/mozart_scripts:/mozart_scripts:cached
+    command: sh -c "npm install && pm2-runtime pm2.json"
+  master:
+    build: ./master
+    volumes:
+      - ./master:/app:cached
+    command: sh -c "npm install && pm2-runtime pm2.json"
+  db:
+    ports:
+      - 27017:27017
+networks:
+  docker-mozart:

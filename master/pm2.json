@@ -1,0 +1,9 @@
+{
+    "apps": [{
+        "name": "master",
+        "script": "npm",
+        "args": "start",
+        "watch": ["app.js", "src"],
+        "env": {}
+    }]
+}
