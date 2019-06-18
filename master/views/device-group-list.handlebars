@@ -1,0 +1,16 @@
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">All Device Groups</h1>
+    </div>
+
+    {{#each deviceGroups}}
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">{{this}}</h5>
+            <p class="card-text"> XX devices</p>
+            <a href="/device-groups/{{this}}" class="btn btn-primary">View devices</a>
+        </div>
+    </div>
+    {{/each}}
+</main>

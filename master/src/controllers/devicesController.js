@@ -30,18 +30,19 @@ exports.getDevice = async (req, res) => {
 
 // DEVICE CHECK IN
 exports.checkIn = async (req, res) => {
-  console.log('POST /api/register-device')
+  console.log('POST /api/check-in')
   if (req.body === undefined) {
     res.json({error: 'Invalid request data'})
   } else {
     let checkInData = req.body
     console.log('checkInData', checkInData)
 
-    if (checkInData.id === undefined || checkInData.deviceGroup === undefined) {
+    if (checkInData.id === undefined || checkInData.deviceGroup === undefined || checkInData.version === undefined) {
       res.json({error: 'Invalid request data', data: checkInData})
     } else {
-      let device = await devicesService.checkIn(checkInData.id, checkInData.deviceGroup)
-      res.json({success: true, checkInData: checkInData, device: device})
+      let device = await devicesService.checkIn(checkInData.id, checkInData.deviceGroup, checkInData.version)
+      let deviceGroup = await devicesService.getDeviceGroup(device.deviceGroup)
+      res.json({success: true, checkInData: checkInData, device: device, deviceGroup: deviceGroup})
     }
   }
 }

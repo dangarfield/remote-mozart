@@ -1,6 +1,6 @@
 #!/bin/bash
 stop_script="mozart_stop.sh"
-scripts_folder="mozart_scripts/"
+scripts_folder=".mozart/"
 mozart_worker_jobs="jobs"
 file_watcher="mozart_fileWatcher.sh"
 event_file="mozart_event.txt"
@@ -46,6 +46,7 @@ if [ "$1" != "stop" ]; then
   which fswatch >/dev/null || err "you need 'fswatch' command (brew install fswatch)"
   fswatch -0 ./$event_file | xargs -0 -n1 ./$exec_script
 fi
+docker stop remozart-${DEVICE_NAME}
 EOM
 }
 install_stop_script_mac() {
@@ -54,17 +55,52 @@ install_stop_script_mac() {
 cd $scripts_folder
 pkill -f "fswatch -0 ./$event_file"
 cd ..
+docker stop remozart-${DEVICE_NAME}
 EOM
 }
 install_exec_script() {
     cat >$scripts_folder$exec_script <<-EOM
-#!/bin/sh
-scriptName=\$(sed '2q;d' ./$event_file)
+event_type=\$(sed '1q;d' ./$event_file)
+event_data=\$(sed '2q;d' ./$event_file)
 
-echo "RUN: " \$scriptName
-# cd ../eventsHandlers/\$scriptName
-# ./run.sh
-touch arg/\$scriptName
+echo "EVENT: " \$event_type \$event_data
+
+if [ \$event_type = 'deploy' ]; then
+    echo " - DEPLOY: " \$event_data
+
+    cd ..
+    if [ -x "stop.sh" ]; then
+        echo "   - 1 - Run stop file"
+        . ./stop.sh
+    else
+        echo "   - 1 - No stop file to run"
+    fi
+
+    echo "   - 2 - Removing old files"
+    ls | grep -v mozart
+    ls | grep -v mozart | xargs rm -r
+
+    echo "   - 3 - Copy new files"
+    cd $scripts_folder$mozart_worker_jobs/\$event_data
+    chmod u+x stop.sh
+    chmod u+x run.sh
+    cp -r . ../../..
+    cd ../../..
+    ls | grep -v mozart
+    # Set executable file permissions"
+
+    echo "   - 4 - Run run file"
+    . ./run.sh
+
+    # cd ..
+    # ls | grep -v mozart | xargs rm -r
+    # cd ../$scripts_folder$mozart_worker_jobs/\$event_data
+    # cp -r . ../..
+elif [ \$event_type = 'debug' ]; then
+    echo " - DEBUG: " \$event_data
+else
+    echo ' - UNKNOWN event' \$event_type
+fi
 EOM
 }
 
@@ -74,8 +110,8 @@ create_event_file() {
 
 validate_environment_variables() {
     echo '  Checking environmnet variables'
-    if [ -f .env ]; then
-        export $(cat .env | sed 's/#.*//g' | xargs)
+    if [ -f .env.mozart ]; then
+        export $(cat .env.mozart | sed 's/#.*//g' | xargs)
     fi
 
     if [[ -z "${DEVICE_GROUP}" ]]; then
@@ -115,10 +151,12 @@ launch_docker_worker() {
     # docker run --name mozart-worker \
     #     -d \
     #     -v "$(pwd)"/mozart_scripts:/mozart_scripts \
-    #     --env-file .env \
+    #     --env-file .env.mozart \
     #     dangarfield/docker-mozart-worker:latest \
     #     pm2-runtime pm2.json
 
+    # docker run -v `pwd`/.mozart:/.mozart:cached --env-file .env.mozart dangarfield/docker-mozart-worker
+    docker run --name remozart-${DEVICE_NAME} -d -v $(pwd)/.mozart:/.mozart:cached --env-file .env.mozart dangarfield/docker-mozart-worker:latest
 }
 
 install() {
@@ -167,4 +205,4 @@ install() {
 
 install
 
-# curl -sLOS http://localhost:3000/api/mozart_run.sh && . ./mozart_run.sh install
+# curl -sLOS http://localhost:3000/api/mozart_run.sh && . ./mozart_run.sh

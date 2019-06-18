@@ -17,3 +17,21 @@ exports.getAllDeviceGroupIds = async () => {
   let idList = await deviceGroupsCollection.find({}, {projection: {_id: 1}}).toArray()
   return idList.map(p => p._id)
 }
+
+exports.saveDeviceGroup = async (deviceGroup, keysToUnset) => {
+  let _id = deviceGroup.id
+  delete deviceGroup.id
+
+  console.log('saveDeviceGroup', deviceGroup, keysToUnset)
+  let update = {$set: deviceGroup}
+  if(keysToUnset !== undefined) {
+    unsetObj = {}
+    for (let i = 0; i < keysToUnset.length; i++) {
+      const key = keysToUnset[i];
+      unsetObj[key] = ''
+    }
+    update.$unset = unsetObj
+  }
+
+  await deviceGroupsCollection.updateOne({_id: _id}, update)
+}

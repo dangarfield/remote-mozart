@@ -2,11 +2,14 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
+const exphbs = require('express-handlebars')
 require('log-timestamp')
 
 const app = express()
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.json())
+app.engine('handlebars', exphbs({defaultLayout: 'main'}))
+app.set('view engine', 'handlebars')
 
 const PORT = process.env.PORT || 3000
 

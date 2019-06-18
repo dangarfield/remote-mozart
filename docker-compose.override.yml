@@ -4,7 +4,7 @@ services:
     build: ./worker
     volumes:
       - ./worker:/app:cached
-      - ./example/mozart_scripts:/mozart_scripts:cached
+      - ./example/.mozart:/.mozart:cached
     command: sh -c "npm install && pm2-runtime pm2.json"
   master:
     build: ./master

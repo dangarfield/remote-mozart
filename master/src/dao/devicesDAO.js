@@ -9,12 +9,12 @@ exports.getDeviceById = async (id) => {
   return device
 }
 
-exports.insertDevice = async (id, deviceGroupId) => {
-  await devicesCollection.insertOne({_id: id, deviceGroup: deviceGroupId, lastCheckIn: new Date()})
+exports.insertDevice = async (id, deviceGroupId, deployedVersion) => {
+  await devicesCollection.insertOne({_id: id, deviceGroup: deviceGroupId, deployedVersion: deployedVersion, lastCheckIn: new Date()})
 }
 
-exports.updateCheckIn = async (id) => {
-  return devicesCollection.updateOne({_id: id}, {$set: {lastCheckIn: new Date()}})
+exports.updateCheckIn = async (id, deployedVersion) => {
+  return devicesCollection.updateOne({_id: id}, {$set: {deployedVersion: deployedVersion, lastCheckIn: new Date()}})
 }
 
 exports.getAllDevices = async () => {
@@ -28,7 +28,7 @@ exports.getAllDevices = async () => {
 }
 exports.getAllDevicesForDeviceGroup = async (deviceGroup) => {
   let devices = []
-  await devicesCollection.find({deviceGroup: deviceGroup}, {projection: {_id: 1, deviceGroup: 1, lastCheckIn: 1}}).forEach(function (device) {
+  await devicesCollection.find({deviceGroup: deviceGroup}, {projection: {_id: 1, deviceGroup: 1, lastCheckIn: 1, deployedVersion: 1}}).forEach(function (device) {
     device.id = device._id
     delete device._id
     devices.push(device)

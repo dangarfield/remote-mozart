@@ -5,7 +5,7 @@ services:
     # depends_on:
     #   - master
     volumes:
-      - ./data:/data:cached
+      - ./example/.mozart:/.mozart:cached
     environment:
       - DEVICE_GROUP
       - DEVICE_NAME

@@ -5,3 +5,7 @@
 
 ### Overview
 - tbc
+
+
+Inspired and elements borrowed from:
+- https://github.com/kamil-kielczewski/bash-via-http/

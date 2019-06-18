@@ -1,0 +1,151 @@
+<div class="page-cart">
+    <div class="section">
+        <section>
+            <div class="container">
+                <h2 class="section-title" data-animate="fadeInUp">{{i8n.cart.basket}}</h2>
+
+
+                <div class="title-container">
+
+                </div>
+                <div class="offers-container">
+
+                </div>
+                <div class="cart-container" data-animate="fadeInUp">
+                    {{i8n.cart.loading}}
+                </div>
+                <div class="total-container">
+
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+
+<script id="tmpl-cart-title" type="text/x-handlebars-template">
+    <div class="row">
+        <h3>{{i8n.cart.passenger.title}} \{{name}} <i>(Cabin: \{{cabin}})</i></h3>
+    </div>
+</script>
+
+<script id="tmpl-cart-offers" type="text/x-handlebars-template">
+    <div class="row cart-prices">
+        <h3>{{i8n.cart.offers.title}}</h3>
+        \{{#each photoGroups}}
+            <div class="col-md-3">
+                <div class="price-table">
+                    <header class="price-header">
+                        <h3>\{{id}}</h3>
+                        <p>\{{blurb}}</p>
+                    </header>
+                    <ul class="price-descr">
+                        <li>\{{priceString}}</li>
+                        <li>\{{offBlurb}}</li>
+                    </ul>
+                </div>
+            </div>
+        \{{/each}}
+        \{{#each bulk}}
+            <div class="col-md-2">
+                <div class="price-table\{{#if active}} active\{{/if}}">
+                    <header class="price-header bulk">
+                        <div class="inner">
+                            <h3>\{{title}}</h3>
+                            <p>\{{blurb}}</p>
+                        </div>
+                    </header>
+                    <ul class="price-descr">
+                        <li>\{{priceString}}</li>
+                        \{{#if active}}
+                            <li><button type="button" class="btn btn-danger bulk-add" data-bulk="\{{id}}" data-action-add="false">{{i8n.cart.offers.bulk.remove}}</button></li>
+                        \{{else if upgrade}}
+                            <li><button type="button" class="btn btn-info bulk-add" data-bulk="\{{id}}" data-action-add="true">{{i8n.cart.offers.bulk.upgrade}} <br/>\{{upgardePrice}}</button></li>
+                        \{{else}}
+                            <li><button type="button" class="btn btn-primary bulk-add" data-bulk="\{{id}}" data-action-add="true">{{i8n.cart.offers.bulk.add}}</button></li>
+                        \{{/if}}
+                    </ul>
+                </div>
+            </div>
+        \{{/each}}
+    </div>
+</script>
+<script id="tmpl-cart-main" type="text/x-handlebars-template">
+    \{{#each basket.photoGroups}}
+        <div class="row photo-group">
+            <h4>\{{id}} Photos</h4>
+            \{{#if missedOffer}}<p>{{i8n.cart.missedoffer}}</p>\{{/if}}
+
+            \{{#each photos}}
+                <div class="col-md-2 photo-item">
+                    <div class="image-holder">
+                        <img src="\{{url}}?thumb" />
+                    </div>
+
+                    <div class="text-center">
+                        <div class="icons clearfix">
+                            <p class="pull-left">\{{priceString}}</p>
+                            <i class="fa fa-times fa-lg pull-right price-icon remove-photo" data-photo="\{{id}}"></i>
+                            \{{#if isBulk}}
+                                <span class="fa-stack fa-lg pull-right">
+                                    <i class="fa fa-certificate fa-stack-2x"></i>
+                                    <i class="fa fa-archive fa-stack-1x fa-inverse"></i>
+                                </span>
+                            \{{/if}}
+                            \{{#if isDiscounted}}
+                                <span class="fa-stack fa-lg pull-right">
+                                    <i class="fa fa-certificate fa-stack-2x"></i>
+                                    <i class="fa fa-tags fa-stack-1x fa-inverse"></i>
+                                </span>
+                            \{{/if}}
+                        </div>
+                        \{{#each upsell}}
+                            {{!-- <li>\{{id}} - \{{count}} - \{{priceString}} - \{{totalString}}</li> --}}
+                            <h5 class="clearfix">\{{id}} - <i>{{i8n.cart.upsell.price}} \{{priceString}}</i></h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-sm upsell-add" data-upsell="\{{id}}" data-photo="\{{../id}}" data-count="\{{count}}" data-action-add="false"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-default btn-sm upsell-count\{{#unless zeroCount}} btn-primary\{{/unless}}" disabled="disabled">\{{count}} </button>
+                                <button type="button" class="btn btn-default btn-sm upsell-add" data-upsell="\{{id}}" data-photo="\{{../id}}" data-count="\{{count}}" data-action-add="true"><i class="fa fa-plus"></i></button>
+                            </div>
+                            {{!-- <p>{{i8n.cart.upsell.total}} \{{totalString}}</p> --}}
+                        \{{/each}}
+                    </div>
+                </div>
+            \{{else}}
+            <p>{{i8n.cart.nophotos}}</p>
+            \{{/each}}
+
+        </div>
+    \{{/each}}
+    <div class="row product-group">
+        <h4>\{{id}} Products</h4>
+        \{{#each basket.products}}
+            <div class="col-md-2 photo-item text-center">
+                <h5>\{{id}}</h5>
+                <p>{{i8n.cart.product.price}} \{{priceString}}</i></p>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default btn-sm product-add" data-product="\{{id}}" data-count="\{{count}}" data-action-add="false"><i class="fa fa-minus"></i></button>
+                    <button type="button" class="btn btn-default btn-sm product-count\{{#unless zeroCount}} btn-primary\{{/unless}}" disabled="disabled">\{{count}} </button>
+                    <button type="button" class="btn btn-default btn-sm product-add" data-product="\{{id}}" data-count="\{{count}}" data-action-add="true"><i class="fa fa-plus"></i></button>
+                </div>
+                {{!-- <p>UPSELL TOTAL i8N \{{totalString}}</p> --}}
+                {{!-- <p>TODO - Add add/remove product buttons</p> --}}
+            </div>
+        \{{/each}}
+    </div>
+
+</script>
+<script id="tmpl-cart-total" type="text/x-handlebars-template">
+    <div class="text-center">
+        <h3>{{i8n.cart.total.title}}</h3>
+
+        \{{#if basket.totals.bulkAdded}}
+            <p>{{i8n.cart.total.bulk}} \{{basket.totals.bulkTotalString}}</p>
+        \{{/if}}
+        <p>{{i8n.cart.total.photos}} \{{basket.totals.photoTotalString}}</p>
+        <p>{{i8n.cart.total.photoextra}} \{{basket.totals.photoExtrasTotalString}}</p>
+        <p>{{i8n.cart.total.products}} \{{basket.totals.productsTotalString}}</p>
+        <h3>\{{basket.totals.grandTotalString}}</h3>
+        <button type="button" class="btn btn-primary btn-checkout pull-right"\{{#if basket.checkoutDisabled}} disabled="disabled"\{{/if}}>{{i8n.cart.total.checkout}}</button>
+    </div>
+</script>

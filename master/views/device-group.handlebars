@@ -1,0 +1,37 @@
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Device Group - {{deviceGroup.id}}
+            {{#if deviceGroup.deployed}}
+            <span class="badge badge-secondary">version {{deviceGroup.deployed.version}}</span>
+            {{else}}
+            <span class="badge badge-secondary">No configured deployment</span>
+            {{/if}}
+            {{#if deviceGroup.staged}}
+            <span class="badge badge-secondary">Staged changes being edited</span>
+            {{/if}}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <a href="/device-groups/{{deviceGroup.id}}/edit" type="button"
+                    class="btn btn-sm btn-outline-secondary">Edit</a>
+                {{!-- <button type="button" class="btn btn-sm btn-outline-secondary">Deploy</button> --}}
+                {{!-- <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button> --}}
+            </div>
+        </div>
+    </div>
+
+    {{#each devices}}
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">{{id}}</h5>
+            <p class="card-text"> Last check in: {{lastCheckIn}}</p>
+            <p class="card-text"> Deployed version: {{deployedVersion}}</p>
+            <p class="card-text"> Ready version: tbc</p>
+            <p class="card-text"> Staged changes: tbc</p>
+            <a href="/device-groups/{{this}}" class="btn btn-primary btn-sm">Variable overrides</a>
+            <a href="/device-groups/{{this}}" class="btn btn-primary btn-sm">Deploy</a>
+        </div>
+    </div>
+    {{/each}}
+</main>

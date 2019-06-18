@@ -1,0 +1,492 @@
+<style>
+    .p-25 {
+        padding: 0.75rem;
+    }
+
+    .has-error .form-control {
+        border-color: #a94442;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    }
+
+    .has-error .form-control:focus {
+        border-color: #843534;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+    }
+
+    .has-success .form-control {
+        border-color: #3c763d;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    }
+
+    .has-success .form-control:focus {
+        border-color: #2b542c;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+    }
+
+    .has-feedback .form-control {
+        padding-right: 42.5px;
+    }
+
+    .has-error .help-block,
+    .has-error .control-label,
+    .has-error .radio,
+    .has-error .checkbox,
+    .has-error .radio-inline,
+    .has-error .checkbox-inline {
+        color: #a94442;
+    }
+
+    .help-block {
+        display: block;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        color: #737373;
+    }
+</style>
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Device Group - {{deviceGroup.id}}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <a href="/device-groups/{{deviceGroup.id}}" type="button"
+                    class="btn btn-sm btn-outline-secondary">View</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary deploy">Deploy</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary copy">Copy to staged</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button>
+            </div>
+        </div>
+    </div>
+    <form class="form staged-content">
+        <div class="row pb-2">
+            <div class="col-6">
+                <h2 class="h3">Deployed <span class="badge badge-secondary">version
+                        {{deviceGroup.deployed.version}}</span>
+                </h2>
+            </div>
+            <div class="col-6">
+                <h2 class="h3">Staged</h2>
+            </div>
+        </div>
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Environment Variables</h5>
+            </div>
+            <div class="col-6">
+                <div class="deployed-envs">
+                    <table class="table table-borderless">
+                        <tbody>
+                            {{#each deviceGroup.deployed.envs}}
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control deployed-name" value="{{this.key}}"
+                                        disabled="disabled" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control deployed-value" value="{{this.value}}"
+                                        disabled="disabled" />
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="staged-envs">
+                    <table class="table table-hover table-borderless table-envs">
+                        <tbody>
+                            {{#each deviceGroup.staged.envs}}
+                            <tr class="row-env">
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control env-key"
+                                            value="{{this.key}}" /></div>
+                                </td>
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control env-value"
+                                            value="{{this.value}}" /></div>
+                                </td>
+                                <td><input type="button" class="btn btn-md btn-danger env-remove" value="Delete">
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align: right;">
+                                    <input type="button" class="btn btn-lg btn-block env-add"
+                                        value="Add environment variable" />
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Run Script</h5>
+            </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control" rows="10" disabled="disabled">{{deviceGroup.deployed.run}}</textarea>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control run-content" rows="10"
+                        placeholder="Run script content">{{deviceGroup.staged.run}}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Stop Script</h5>
+            </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control" rows="10"
+                        disabled="disabled">{{deviceGroup.deployed.stop}}</textarea>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control stop-content" rows="10"
+                        placeholder="Stop script content">{{deviceGroup.staged.stop}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Files</h5>
+            </div>
+            <div class="col-6">
+                <div class="deployed-files">
+                    <table class="table table-borderless">
+                        <tbody>
+                            {{#each deviceGroup.deployed.files}}
+                            <tr class="deployed-row-file-name">
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control deployed-file-name"
+                                            value="{{this.name}}" placeholder="File name" disabled="disabled" /></div>
+                                </td>
+                            </tr>
+                            <tr class="deployed-row-file-content">
+                                <td colspan="2">
+                                    <div class="form-group">
+                                        <textarea class="form-control deployed-file-content" rows="10"
+                                            placeholder="File content" disabled="disabled">{{this.content}}</textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="staged-files">
+                    <table class="table table-hover table-borderless table-files">
+                        <tbody>
+                            {{#each deviceGroup.staged.files}}
+                            <tr class="row-file-name">
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control file-name"
+                                            value="{{this.name}}" placeholder="File name" /></div>
+                                </td>
+                                <td><input type="button" class="btn btn-md btn-danger file-remove" value="Delete">
+                                </td>
+                            </tr>
+                            <tr class="row-file-content">
+                                <td colspan="2">
+                                    <div class="form-group">
+                                        <textarea class="form-control file-content" rows="10"
+                                            placeholder="File content">{{this.content}}</textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align: right;">
+                                    <input type="button" class="btn btn-lg btn-block file-add" value="Add file" />
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row pb-2">
+            <div class="col-6">
+                <h5 class="h5">Save</h5>
+            </div>
+            <div class="col-6">
+                <div class="save">
+                    <button type="submit" class="btn btn-primary save" disabled="disabled">Save</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</main>
+<div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
+    <div class="toast-container" style="position: absolute; top: 0; right: 0;">
+    </div>
+</div>
+<script>
+
+    const bindCopyButton = async () => {
+        $('.copy').click(async function () {
+            console.log('copy click')
+            $.ajax({
+                url: '/device-groups/{{deviceGroup.id}}/copy',
+                type: 'POST'
+            }).done(async function (data) {
+                console.log('Saved deploy res:', data)
+                if (data.error) {
+                    await displayToast('info', data.errorMsg)
+                } else {
+                    await displayToast('success', 'Staged changes deployed')
+                    window.location.reload()
+                }
+            }).fail(async function (error) {
+                console.log('Error saving deploy config', error)
+                await displayToast('error', 'Error copying changes to staged')
+            })
+
+        })
+    }
+    const bindDeployButton = async () => {
+        $('.deploy').click(async function () {
+            console.log('deploy click')
+            let thereAreUnsavedChanges = !$('.save').is(':disabled')
+            console.log('thereAreUnsavedChanges', thereAreUnsavedChanges)
+            if (thereAreUnsavedChanges) {
+                await displayToast('info', 'Save your changes before you deploy')
+            } else {
+                $.ajax({
+                    url: '/device-groups/{{deviceGroup.id}}/deploy',
+                    type: 'POST'
+                }).done(async function (data) {
+                    console.log('Saved deploy res:', data)
+                    if (data.error) {
+                        await displayToast('info', data.errorMsg)
+                    } else {
+                        await displayToast('success', 'Staged changes deployed')
+                        window.location.reload()
+                    }
+
+                }).fail(async function (error) {
+                    console.log('Error saving deploy config', error)
+                    await displayToast('error', 'Error deploying changes')
+                })
+            }
+        })
+    }
+    const displayToast = async (type, title) => {
+        $.toast({
+            title: title,
+            type: type,
+            delay: 5000
+        });
+    }
+    const saveStagedData = async (formData) => {
+        console.log('saveStagedData')
+        $.ajax({
+            url: '/device-groups/{{deviceGroup.id}}/edit',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData)
+        }).done(async function (data) {
+            console.log('Saved config res: ' + data)
+            await displayToast('success', 'Staged config saved')
+        }).fail(async function (error) {
+            console.log('Error saving staged config', error)
+            await displayToast('error', 'Error saving staged config')
+        })
+    }
+    const getFormData = async () => {
+        let data = {
+            run: $('.run-content').val(),
+            stop: $('.stop-content').val(),
+            envs: [],
+            files: []
+        }
+        $('.table-envs tr.row-env').each(function (i, row) {
+            let key = $(row).find('.env-key').val()
+            let value = $(row).find('.env-value').val()
+            console.log('env', key, value)
+            data.envs.push({ key: key, value: value })
+        })
+        $('.table-files tr.row-file-name').each(function (i, rowName) {
+            let name = $(rowName).find('.file-name').val()
+            let rowContent = $(rowName).next()
+            let content = $(rowContent).find('.file-content').val()
+            console.log('file', name, content)
+            data.files.push({ name: name, content: content })
+        })
+        return data
+    }
+
+    const unbindFormValidation = async () => {
+        let bootstrapValidator = $('.staged-content').data('bootstrapValidator')
+        if (bootstrapValidator !== undefined) {
+            try {
+                bootstrapValidator.destroy()
+            }
+            catch (error) {
+                console.error('bootstrapValidator destroy', error);
+            }
+            try {
+                $('.staged-content').data('bootstrapValidator', null)
+            }
+            catch (error) {
+                console.error('bootstrapValidator null', error);
+            }
+        }
+    }
+    const bindFormValidation = async () => {
+        console.log('bindFormValidation')
+
+        $('.staged-content').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                run: {
+                    selector: '.run-content',
+                    message: 'The run script is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The run script is required and cannot be empty'
+                        }
+                    }
+                },
+                stop: {
+                    selector: '.stop-content',
+                    message: 'The stop script is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The stop script is required and cannot be empty'
+                        }
+                    }
+                },
+                envKey: {
+                    selector: '.env-key',
+                    message: 'The key is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The key is required and cannot be empty'
+                        }
+                    }
+                },
+                envValue: {
+                    selector: '.env-value',
+                    message: 'The value is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The value is required and cannot be empty'
+                        }
+                    }
+                },
+                fileName: {
+                    selector: '.file-name',
+                    message: 'The name is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The name is required and cannot be empty'
+                        }
+                    }
+                },
+                fileContent: {
+                    selector: '.file-content',
+                    message: 'The content is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The content is required and cannot be empty'
+                        }
+                    }
+                }
+            }
+        }).on('success.form.bv', async function (e) {
+            e.preventDefault();
+            let formData = await getFormData()
+            console.log('Form valid and submitted', formData)
+            await saveStagedData(formData)
+        })
+
+    }
+    const bindFileAdd = async () => {
+        $('.file-add').click(async function () {
+            await unbindFormValidation()
+            let row1 = $('<tr class="row-file-name">')
+            let cols1 = ''
+            cols1 += '<td><div class="form-group"><input type="text" class="form-control file-name" value="" placeholder="File name" /></div></td>'
+            cols1 += '<td><input type="button" class="btn btn-md btn-danger file-remove" value="Delete"></td>'
+            let row2 = $('<tr class="row-file-content">')
+            let cols2 = '<td colspan="2"><div class="form-group"><textarea class="form-control file-content" rows="10" placeholder="File content"></textarea></div></td>'
+            row1.append(cols1)
+            row2.append(cols2)
+            $('table.table-files').append(row1)
+            $('table.table-files').append(row2)
+            await bindFileRemove()
+            await bindFormValidation()
+        })
+    }
+    const bindFileRemove = async () => {
+        $(".file-remove").unbind()
+        $(".file-remove").click(async function () {
+            await unbindFormValidation()
+            let nameRow = $(this).closest('tr')
+            let contentRow = nameRow.next()
+            nameRow.remove()
+            contentRow.remove()
+            await bindFormValidation()
+        })
+    }
+    const bindEnvAdd = async () => {
+        $('.env-add').click(async function () {
+            await unbindFormValidation()
+            let row = $('<tr class="row-env">')
+            let cols = ''
+            cols += '<td><div class="form-group"><input type="text" class="form-control env-key" value="" placeholder="Key" /></div></td>'
+            cols += '<td><div class="form-group"><input type="text" class="form-control env-value" value="" placeholder="Value" /></div></td>'
+            cols += '<td><input type="button" class="btn btn-md btn-danger env-remove" value="Delete"></td>'
+            row.append(cols)
+            $('table.table-envs').append(row)
+            await bindEnvRemove()
+            await bindFormValidation()
+        })
+    }
+    const bindEnvRemove = async () => {
+        $(".env-remove").unbind()
+        $(".env-remove").click(async function () {
+            await unbindFormValidation()
+            $(this).closest('tr').remove()
+            await bindFormValidation()
+        })
+    }
+    $('document').ready(async function () {
+        console.log('ready')
+        await bindEnvAdd()
+        await bindEnvRemove()
+        await bindFileAdd()
+        await bindFileRemove()
+        await bindFormValidation()
+        await bindDeployButton()
+        await bindCopyButton()
+    })
+</script>
