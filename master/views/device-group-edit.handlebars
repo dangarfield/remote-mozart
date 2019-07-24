@@ -40,6 +40,27 @@
         color: #a94442;
     }
 
+    .has-feedback {
+        position: relative;
+    }
+
+    .form-horizontal .has-feedback .form-control-feedback {
+        top: 0;
+        right: 15px;
+    }
+
+    .form-control-feedback {
+        position: absolute;
+        top: 3px;
+        right: 0;
+        z-index: 2;
+        display: block;
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        text-align: center;
+    }
+
     .help-block {
         display: block;
         margin-top: 5px;
@@ -58,7 +79,8 @@
                     class="btn btn-sm btn-outline-secondary">View</a>
                 <button type="button" class="btn btn-sm btn-outline-secondary deploy">Deploy</button>
                 <button type="button" class="btn btn-sm btn-outline-secondary copy">Copy to staged</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary delete-staged">Clear staged</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Delete Device Group</button>
             </div>
         </div>
     </div>
@@ -134,14 +156,19 @@
                 <h5 class="h5">Run Script</h5>
             </div>
             <div class="col-6">
-                <div class="form-group p-25">
-                    <textarea class="form-control" rows="10" disabled="disabled">{{deviceGroup.deployed.run}}</textarea>
+                <div class="p-25">
+                    <div class="form-group">
+                        <textarea class="form-control" rows="10"
+                            disabled="disabled">{{deviceGroup.deployed.run}}</textarea>
+                    </div>
                 </div>
             </div>
             <div class="col-6">
-                <div class="form-group p-25">
-                    <textarea class="form-control run-content" rows="10"
-                        placeholder="Run script content">{{deviceGroup.staged.run}}</textarea>
+                <div class="p-25">
+                    <div class="form-group">
+                        <textarea class="form-control run-content" rows="10"
+                            placeholder="Run script content">{{deviceGroup.staged.run}}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,15 +178,19 @@
                 <h5 class="h5">Stop Script</h5>
             </div>
             <div class="col-6">
-                <div class="form-group p-25">
-                    <textarea class="form-control" rows="10"
-                        disabled="disabled">{{deviceGroup.deployed.stop}}</textarea>
+                <div class="p-25">
+                    <div class="form-group">
+                        <textarea class="form-control" rows="10"
+                            disabled="disabled">{{deviceGroup.deployed.stop}}</textarea>
+                    </div>
                 </div>
             </div>
             <div class="col-6">
-                <div class="form-group p-25">
-                    <textarea class="form-control stop-content" rows="10"
-                        placeholder="Stop script content">{{deviceGroup.staged.stop}}</textarea>
+                <div class="p-25">
+                    <div class="form-group">
+                        <textarea class="form-control stop-content" rows="10"
+                            placeholder="Stop script content">{{deviceGroup.staged.stop}}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -246,6 +277,27 @@
 </div>
 <script>
 
+    const bindDeleteStagedButton = async () => {
+        $('.delete-staged').click(async function () {
+            console.log('delete staged click')
+            $.ajax({
+                url: '/device-groups/{{deviceGroup.id}}/delete-staged',
+                type: 'POST'
+            }).done(async function (data) {
+                console.log('Delete staged res:', data)
+                if (data.error) {
+                    await displayToast('info', data.errorMsg)
+                } else {
+                    await displayToast('success', 'Staged config deleted')
+                    window.location.reload()
+                }
+            }).fail(async function (error) {
+                console.log('Error saving deploy config', error)
+                await displayToast('error', 'Error delete staged config')
+            })
+
+        })
+    }
     const bindCopyButton = async () => {
         $('.copy').click(async function () {
             console.log('copy click')
@@ -253,11 +305,11 @@
                 url: '/device-groups/{{deviceGroup.id}}/copy',
                 type: 'POST'
             }).done(async function (data) {
-                console.log('Saved deploy res:', data)
+                console.log('Copy to staged res:', data)
                 if (data.error) {
                     await displayToast('info', data.errorMsg)
                 } else {
-                    await displayToast('success', 'Staged changes deployed')
+                    await displayToast('success', 'Staged changes copied')
                     window.location.reload()
                 }
             }).fail(async function (error) {
@@ -361,9 +413,9 @@
 
         $('.staged-content').bootstrapValidator({
             feedbackIcons: {
-                valid: 'glyphicon glyphicon-ok',
-                invalid: 'glyphicon glyphicon-remove',
-                validating: 'glyphicon glyphicon-refresh'
+                valid: 'fas fa-check',
+                invalid: 'fas fa-times',
+                validating: 'fas fa-pen'
             },
             fields: {
                 run: {
@@ -488,5 +540,6 @@
         await bindFormValidation()
         await bindDeployButton()
         await bindCopyButton()
+        await bindDeleteStagedButton()
     })
 </script>

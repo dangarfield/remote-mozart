@@ -2,9 +2,10 @@ const documentsDAO = require('../dao/documentsDAO')
 const devicesService = require('./devicesService')
 const Archiver = require('archiver')
 
-exports.zipAllFilesForDeployment = async (deviceGroupId, res) => {
+exports.zipAllFilesForDeployment = async (deviceGroupId, deviceId, res) => {
 
     let deviceGroup = await devicesService.getDeviceGroup(deviceGroupId)
+    let device = await devicesService.getDevice(deviceId)
     let files = []
     if(deviceGroup.deployed !== undefined) {
         files.push(deviceGroup.deployed.run)
@@ -29,12 +30,38 @@ exports.zipAllFilesForDeployment = async (deviceGroupId, res) => {
                 zip.append(file.content, {name: file.name})
             }
         }
-        let envStrings = []
+        let envs = []
+
         if(deviceGroup.deployed.envs !== undefined) {
             for (let i = 0; i < deviceGroup.deployed.envs.length; i++) {
                 const env = deviceGroup.deployed.envs[i]
-                envStrings.push(env.key + '=' + env.value)
+                envs.push(env)
             }
+        }
+        // console.log('envs device group', envs)
+        // console.log('envs override', device.envs)
+        if(device.envs !== undefined) {
+            for (let i = 0; i < device.envs.length; i++) {
+                const overrideEnv = device.envs[i]
+                let added = false
+                for (let j = 0; j < envs.length; j++) {
+                    const deviceGroupEnv = envs[j];
+                    if(overrideEnv.key === deviceGroupEnv.key) {
+                        deviceGroupEnv.value = overrideEnv.value
+                        added = true
+                        break
+                    }
+                }
+                if(!added) {
+                    envs.push(overrideEnv)
+                }
+            }
+        }
+        // console.log('envs applied', envs)
+        let envStrings = []
+        for (let i = 0; i < envs.length; i++) {
+            const env = envs[i]
+            envStrings.push(env.key + '=' + env.value)
         }
         let envString = envStrings.join('\n')
         zip.append(envString, {name: '.env'})

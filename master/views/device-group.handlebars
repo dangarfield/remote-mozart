@@ -21,17 +21,27 @@
         </div>
     </div>
 
-    {{#each devices}}
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">{{id}}</h5>
-            <p class="card-text"> Last check in: {{lastCheckIn}}</p>
-            <p class="card-text"> Deployed version: {{deployedVersion}}</p>
-            <p class="card-text"> Ready version: tbc</p>
-            <p class="card-text"> Staged changes: tbc</p>
-            <a href="/device-groups/{{this}}" class="btn btn-primary btn-sm">Variable overrides</a>
-            <a href="/device-groups/{{this}}" class="btn btn-primary btn-sm">Deploy</a>
+    <div class="row">
+        {{#each devices}}
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{id}}</h5>
+                    <p class="card-text"> Last check in: ~ {{lastCheckInHuman}} ago -
+                        {{lastCheckInStatus}}</p>
+                    <p class="card-text"> Deployed version: {{deployedVersion}} should be
+                        {{../deviceGroup.deployed.version}} - {{deployedVersionStatus}}</p>
+                    <p class="card-text"> Deployed override version: {{deployedOverrideVersion}} should be {{version}} -
+                        {{deployedOverrideVersionStatus}}
+                    </p>
+                    <p class="card-text"> Status: tbc</p>
+                    <a href="/device-groups/{{../deviceGroup.id}}/devices/{{id}}/edit"
+                        class="btn btn-primary btn-sm">Edit
+                        variable overrides</a>
+                    {{!-- <a href="/device-groups/{{this}}" class="btn btn-primary btn-sm">Deploy</a> --}}
+                </div>
+            </div>
         </div>
+        {{/each}}
     </div>
-    {{/each}}
 </main>

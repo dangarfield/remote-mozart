@@ -1,14 +1,17 @@
 const devicesService = require('../services/devicesService')
 const documentsService = require('../services/documentsService')
-
+const humanizeDuration = require('humanize-duration')
+// const roundTo = require('round-to')
 
 exports.homePage = async (req, res) => {
-  res.redirect('/device-group')
+  res.redirect('/device-groups')
 }
 exports.viewAllDeviceGroups = async (req, res) => {
   console.log('GET /device-group')
 
-  let deviceGroups = await devicesService.getAllDeviceGroups()
+  let deviceGroupIds = await devicesService.getAllDeviceGroups()
+  let deviceGroups = await getDeviceGroupsDTO(deviceGroupIds)
+  console.log('deviceGroupIds', deviceGroupIds)
   console.log('deviceGroups', deviceGroups)
   res.render('device-group-list', {
     title: 'Device Groups',
@@ -21,7 +24,8 @@ exports.viewDeviceGroup = async (req, res) => {
   console.log('GET /device-group/:id', id)
 
   let deviceGroup = await devicesService.getDeviceGroup(id)
-  let devices = await devicesService.getAllDevicesForDeviceGroup(id)
+  let devicesRaw = await devicesService.getAllDevicesForDeviceGroup(id)
+  let devices = await getDevicesDTO(devicesRaw, deviceGroup)
   console.log('deviceGroups', deviceGroup)
   console.log('devices', devices)
   res.render('device-group', {
@@ -71,13 +75,54 @@ exports.copyDeviceConfigFromDeployedToStaged = async (req, res) => {
   let deployResult = await devicesService.copyDeviceConfigFromDeployedToStaged(id)
   res.json(deployResult)
 }
-exports.downloadLatestFiles = async (req, res) => {
+exports.deleteStagedConfig = async (req, res) => {
   let id = req.params.id
-  console.log('POST /device-group/:id/download', id)
-  let deployResult = await documentsService.zipAllFilesForDeployment(id, res)
+  console.log('POST /device-groups/:id/delete-staged', id)
+  let deployResult = await devicesService.deleteStagedConfig(id)
+  res.json(deployResult)
+}
+exports.downloadLatestFiles = async (req, res) => {
+  let deviceGroupId = req.params.deviceGroupId
+  let deviceId = req.params.deviceId
+  console.log('POST /device-groups/:deviceGroupId/devices/:deviceId/download', deviceGroupId, deviceId)
+
+  let deployResult = await documentsService.zipAllFilesForDeployment(deviceGroupId, deviceId, res)
+
+  console.log('deployResult', deployResult)
 }
 
+exports.editDevice = async (req, res) => {
+  let deviceGroupId = req.params.deviceGroupId
+  let deviceId = req.params.deviceId
+  console.log('GET /device-groups/:deviceGroupId/devices/:deviceId/edit', deviceGroupId, deviceId)
 
+  let deviceGroup = await getDeviceGroupDTO(deviceGroupId)
+  console.log('deviceGroup', deviceGroup)
+  let device = await devicesService.getDevice(deviceId)
+  console.log('device', device)
+  res.render('device-edit', {
+    title: 'Device Edit',
+    nav: await getNavDTO(device.deviceGroup),
+    device: device,
+    deviceGroup: deviceGroup
+  })
+}
+exports.saveDeviceConfig = async (req, res) => {
+  let deviceGroupId = req.params.deviceGroupId
+  let deviceId = req.params.deviceId
+  console.log('POST /device-groups/:deviceGroupId/devices/:deviceId/edit', deviceGroupId, deviceId)
+
+  let deviceConfig = req.body
+  console.log('deviceConfig', deviceConfig)
+
+  // TODO Validate stagedConfig
+
+  await devicesService.saveDeviceConfig(deviceId, deviceConfig.envs)
+
+  let device = await devicesService.getDevice(deviceId)
+  console.log('device', device)
+  res.json({deviceConfig: deviceConfig, device: device})
+}
 
 const getNavDTO = async (id) => {
   let navItems = []
@@ -90,6 +135,74 @@ const getNavDTO = async (id) => {
   return navItems
 }
 
+const getDeviceDTO = async (device, deviceGroup) => {
+  if (device.envs === undefined) {
+    device.envs = []
+  }
+  if (device.version === undefined) {
+    device.version = 0
+  }
+  if (device.deployedVersion === undefined) {
+    device.deployedVersion = 0
+  }
+  if (device.deployedOverrideVersion === undefined) {
+    device.deployedOverrideVersion = 0
+  }
+
+  let lastCheckInDiff = new Date() - device.lastCheckIn
+  device.lastCheckInHuman = humanizeDuration(lastCheckInDiff, { largest: 1, round: true })
+
+  // Check in status
+  switch (true) {
+    case (lastCheckInDiff < (3 * 60 * 1000)): // 3 minutes
+      device.lastCheckInStatus = 'good'
+      break
+    case (lastCheckInDiff < (60 * 60 * 1000)): // 1 hour
+      device.lastCheckInStatus = 'ok'
+      break
+    default:
+      device.lastCheckInStatus = 'bad'
+      break
+  }
+
+  // Deployed version
+  console.log('deployedVersionStatus', deviceGroup.deployed.version, device.deployedVersion)
+  if (deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined) {
+    device.deployedVersionStatus = 'good'
+  } else {
+    device.deployedVersionStatus = deviceGroup.deployed.version === device.deployedVersion ? 'good' : 'bad'
+  }
+
+  // Deployed override version
+  console.log('deployedOverrideVersionStatus', device.version, device.deployedOverrideVersion)
+  if (device.version === undefined) {
+    device.deployedOverrideVersionStatus = 'good'
+  } else {
+    device.deployedOverrideVersionStatus = device.version === device.deployedOverrideVersion ? 'good' : 'bad'
+  }
+
+  return device
+}
+const getDevicesDTO = async (deviceModels, deviceGroup) => {
+  let devices = []
+  for (let i = 0; i < deviceModels.length; i++) {
+    const deviceModel = deviceModels[i]
+    devices.push(await getDeviceDTO(deviceModel, deviceGroup))
+  }
+  return devices
+}
+const getDeviceGroupsDTO = async (deviceGroupIds) => {
+  let deviceGroups = []
+  for (let i = 0; i < deviceGroupIds.length; i++) {
+    const deviceGroupId = deviceGroupIds[i]
+    let deviceGroup = {
+      id: deviceGroupId,
+      count: await devicesService.getDeviceCountForDeviceGroup(deviceGroupId)
+    }
+    deviceGroups.push(deviceGroup)
+  }
+  return deviceGroups
+}
 const getDeviceGroupDTO = async (id) => {
   let deviceGroup = await devicesService.getDeviceGroup(id)
   if (deviceGroup.deployed === undefined) {

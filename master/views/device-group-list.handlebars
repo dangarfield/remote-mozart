@@ -4,13 +4,17 @@
         <h1 class="h2">All Device Groups</h1>
     </div>
 
-    {{#each deviceGroups}}
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">{{this}}</h5>
-            <p class="card-text"> XX devices</p>
-            <a href="/device-groups/{{this}}" class="btn btn-primary">View devices</a>
+    <div class="row">
+        {{#each deviceGroups}}
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{id}}</h5>
+                    <p class="card-text"> {{count}} devices</p>
+                    <a href="/device-groups/{{id}}" class="btn btn-primary">View devices</a>
+                </div>
+            </div>
         </div>
+        {{/each}}
     </div>
-    {{/each}}
 </main>

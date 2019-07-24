@@ -37,10 +37,10 @@ exports.checkIn = async (req, res) => {
     let checkInData = req.body
     console.log('checkInData', checkInData)
 
-    if (checkInData.id === undefined || checkInData.deviceGroup === undefined || checkInData.version === undefined) {
+    if (checkInData.id === undefined || checkInData.deviceGroup === undefined || checkInData.version === undefined || checkInData.overrideVersion === undefined) {
       res.json({error: 'Invalid request data', data: checkInData})
     } else {
-      let device = await devicesService.checkIn(checkInData.id, checkInData.deviceGroup, checkInData.version)
+      let device = await devicesService.checkIn(checkInData.id, checkInData.deviceGroup, checkInData.version, checkInData.overrideVersion)
       let deviceGroup = await devicesService.getDeviceGroup(device.deviceGroup)
       res.json({success: true, checkInData: checkInData, device: device, deviceGroup: deviceGroup})
     }

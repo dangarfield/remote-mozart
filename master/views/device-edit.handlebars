@@ -1,151 +1,313 @@
-<div class="page-cart">
-    <div class="section">
-        <section>
-            <div class="container">
-                <h2 class="section-title" data-animate="fadeInUp">{{i8n.cart.basket}}</h2>
+<style>
+    .p-25 {
+        padding: 0.75rem;
+    }
 
+    .has-error .form-control {
+        border-color: #a94442;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    }
 
-                <div class="title-container">
+    .has-error .form-control:focus {
+        border-color: #843534;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+    }
 
-                </div>
-                <div class="offers-container">
+    .has-success .form-control {
+        border-color: #3c763d;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    }
 
-                </div>
-                <div class="cart-container" data-animate="fadeInUp">
-                    {{i8n.cart.loading}}
-                </div>
-                <div class="total-container">
+    .has-success .form-control:focus {
+        border-color: #2b542c;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+    }
 
+    .has-feedback .form-control {
+        padding-right: 42.5px;
+    }
+
+    .has-error .help-block,
+    .has-error .control-label,
+    .has-error .radio,
+    .has-error .checkbox,
+    .has-error .radio-inline,
+    .has-error .checkbox-inline {
+        color: #a94442;
+    }
+
+    .help-block {
+        display: block;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        color: #737373;
+    }
+</style>
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Device - {{device.id}}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <a href="/device-groups/{{device.deviceGroup}}" type="button"
+                    class="btn btn-sm btn-outline-secondary">View device group</a>
+                {{!-- <button type="button" class="btn btn-sm btn-outline-secondary deploy">Deploy</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary copy">Copy to staged</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button> --}}
+            </div>
+        </div>
+    </div>
+    <form class="form device-data">
+        <div class="row pb-2">
+            <div class="col-6">
+                <h2 class="h3">Device Group Config <span class="badge badge-secondary">version
+                        {{deviceGroup.deployed.version}}</span>
+                </h2>
+            </div>
+            <div class="col-6">
+                <h2 class="h3">Device Override</h2>
+            </div>
+        </div>
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Environment Variables</h5>
+            </div>
+            <div class="col-6">
+                <div class="deployed-envs">
+                    <table class="table table-borderless">
+                        <tbody>
+                            {{#each deviceGroup.deployed.envs}}
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control deployed-name" value="{{this.key}}"
+                                        disabled="disabled" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control deployed-value" value="{{this.value}}"
+                                        disabled="disabled" />
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </section>
-    </div>
-</div>
-
-
-<script id="tmpl-cart-title" type="text/x-handlebars-template">
-    <div class="row">
-        <h3>{{i8n.cart.passenger.title}} \{{name}} <i>(Cabin: \{{cabin}})</i></h3>
-    </div>
-</script>
-
-<script id="tmpl-cart-offers" type="text/x-handlebars-template">
-    <div class="row cart-prices">
-        <h3>{{i8n.cart.offers.title}}</h3>
-        \{{#each photoGroups}}
-            <div class="col-md-3">
-                <div class="price-table">
-                    <header class="price-header">
-                        <h3>\{{id}}</h3>
-                        <p>\{{blurb}}</p>
-                    </header>
-                    <ul class="price-descr">
-                        <li>\{{priceString}}</li>
-                        <li>\{{offBlurb}}</li>
-                    </ul>
+            <div class="col-6">
+                <div class="staged-envs">
+                    <table class="table table-hover table-borderless table-envs">
+                        <tbody>
+                            {{#each device.envs}}
+                            <tr class="row-env">
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control env-key"
+                                            value="{{this.key}}" /></div>
+                                </td>
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control env-value"
+                                            value="{{this.value}}" /></div>
+                                </td>
+                                <td><input type="button" class="btn btn-md btn-danger env-remove" value="Delete">
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align: right;">
+                                    <input type="button" class="btn btn-lg btn-block env-add"
+                                        value="Add environment variable" />
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="save">
+                    <button type="submit" class="btn btn-primary save" disabled="disabled">Save</button>
                 </div>
             </div>
-        \{{/each}}
-        \{{#each bulk}}
-            <div class="col-md-2">
-                <div class="price-table\{{#if active}} active\{{/if}}">
-                    <header class="price-header bulk">
-                        <div class="inner">
-                            <h3>\{{title}}</h3>
-                            <p>\{{blurb}}</p>
-                        </div>
-                    </header>
-                    <ul class="price-descr">
-                        <li>\{{priceString}}</li>
-                        \{{#if active}}
-                            <li><button type="button" class="btn btn-danger bulk-add" data-bulk="\{{id}}" data-action-add="false">{{i8n.cart.offers.bulk.remove}}</button></li>
-                        \{{else if upgrade}}
-                            <li><button type="button" class="btn btn-info bulk-add" data-bulk="\{{id}}" data-action-add="true">{{i8n.cart.offers.bulk.upgrade}} <br/>\{{upgardePrice}}</button></li>
-                        \{{else}}
-                            <li><button type="button" class="btn btn-primary bulk-add" data-bulk="\{{id}}" data-action-add="true">{{i8n.cart.offers.bulk.add}}</button></li>
-                        \{{/if}}
-                    </ul>
-                </div>
-            </div>
-        \{{/each}}
-    </div>
-</script>
-<script id="tmpl-cart-main" type="text/x-handlebars-template">
-    \{{#each basket.photoGroups}}
-        <div class="row photo-group">
-            <h4>\{{id}} Photos</h4>
-            \{{#if missedOffer}}<p>{{i8n.cart.missedoffer}}</p>\{{/if}}
-
-            \{{#each photos}}
-                <div class="col-md-2 photo-item">
-                    <div class="image-holder">
-                        <img src="\{{url}}?thumb" />
-                    </div>
-
-                    <div class="text-center">
-                        <div class="icons clearfix">
-                            <p class="pull-left">\{{priceString}}</p>
-                            <i class="fa fa-times fa-lg pull-right price-icon remove-photo" data-photo="\{{id}}"></i>
-                            \{{#if isBulk}}
-                                <span class="fa-stack fa-lg pull-right">
-                                    <i class="fa fa-certificate fa-stack-2x"></i>
-                                    <i class="fa fa-archive fa-stack-1x fa-inverse"></i>
-                                </span>
-                            \{{/if}}
-                            \{{#if isDiscounted}}
-                                <span class="fa-stack fa-lg pull-right">
-                                    <i class="fa fa-certificate fa-stack-2x"></i>
-                                    <i class="fa fa-tags fa-stack-1x fa-inverse"></i>
-                                </span>
-                            \{{/if}}
-                        </div>
-                        \{{#each upsell}}
-                            {{!-- <li>\{{id}} - \{{count}} - \{{priceString}} - \{{totalString}}</li> --}}
-                            <h5 class="clearfix">\{{id}} - <i>{{i8n.cart.upsell.price}} \{{priceString}}</i></h5>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-default btn-sm upsell-add" data-upsell="\{{id}}" data-photo="\{{../id}}" data-count="\{{count}}" data-action-add="false"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-default btn-sm upsell-count\{{#unless zeroCount}} btn-primary\{{/unless}}" disabled="disabled">\{{count}} </button>
-                                <button type="button" class="btn btn-default btn-sm upsell-add" data-upsell="\{{id}}" data-photo="\{{../id}}" data-count="\{{count}}" data-action-add="true"><i class="fa fa-plus"></i></button>
-                            </div>
-                            {{!-- <p>{{i8n.cart.upsell.total}} \{{totalString}}</p> --}}
-                        \{{/each}}
-                    </div>
-                </div>
-            \{{else}}
-            <p>{{i8n.cart.nophotos}}</p>
-            \{{/each}}
 
         </div>
-    \{{/each}}
-    <div class="row product-group">
-        <h4>\{{id}} Products</h4>
-        \{{#each basket.products}}
-            <div class="col-md-2 photo-item text-center">
-                <h5>\{{id}}</h5>
-                <p>{{i8n.cart.product.price}} \{{priceString}}</i></p>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm product-add" data-product="\{{id}}" data-count="\{{count}}" data-action-add="false"><i class="fa fa-minus"></i></button>
-                    <button type="button" class="btn btn-default btn-sm product-count\{{#unless zeroCount}} btn-primary\{{/unless}}" disabled="disabled">\{{count}} </button>
-                    <button type="button" class="btn btn-default btn-sm product-add" data-product="\{{id}}" data-count="\{{count}}" data-action-add="true"><i class="fa fa-plus"></i></button>
-                </div>
-                {{!-- <p>UPSELL TOTAL i8N \{{totalString}}</p> --}}
-                {{!-- <p>TODO - Add add/remove product buttons</p> --}}
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Run Script</h5>
             </div>
-        \{{/each}}
-    </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control" rows="10" disabled="disabled">{{deviceGroup.deployed.run}}</textarea>
+                </div>
+            </div>
+        </div>
 
-</script>
-<script id="tmpl-cart-total" type="text/x-handlebars-template">
-    <div class="text-center">
-        <h3>{{i8n.cart.total.title}}</h3>
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Stop Script</h5>
+            </div>
+            <div class="col-6">
+                <div class="form-group p-25">
+                    <textarea class="form-control" rows="10"
+                        disabled="disabled">{{deviceGroup.deployed.stop}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="row pb-2">
+            <div class="col-12">
+                <h5 class="h5">Files</h5>
+            </div>
+            <div class="col-6">
+                <div class="deployed-files">
+                    <table class="table table-borderless">
+                        <tbody>
+                            {{#each deviceGroup.deployed.files}}
+                            <tr class="deployed-row-file-name">
+                                <td>
+                                    <div class="form-group"><input type="text" class="form-control deployed-file-name"
+                                            value="{{this.name}}" placeholder="File name" disabled="disabled" /></div>
+                                </td>
+                            </tr>
+                            <tr class="deployed-row-file-content">
+                                <td colspan="2">
+                                    <div class="form-group">
+                                        <textarea class="form-control deployed-file-content" rows="10"
+                                            placeholder="File content" disabled="disabled">{{this.content}}</textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
 
-        \{{#if basket.totals.bulkAdded}}
-            <p>{{i8n.cart.total.bulk}} \{{basket.totals.bulkTotalString}}</p>
-        \{{/if}}
-        <p>{{i8n.cart.total.photos}} \{{basket.totals.photoTotalString}}</p>
-        <p>{{i8n.cart.total.photoextra}} \{{basket.totals.photoExtrasTotalString}}</p>
-        <p>{{i8n.cart.total.products}} \{{basket.totals.productsTotalString}}</p>
-        <h3>\{{basket.totals.grandTotalString}}</h3>
-        <button type="button" class="btn btn-primary btn-checkout pull-right"\{{#if basket.checkoutDisabled}} disabled="disabled"\{{/if}}>{{i8n.cart.total.checkout}}</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</main>
+<div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
+    <div class="toast-container" style="position: absolute; top: 0; right: 0;">
     </div>
+</div>
+<script>
+
+    const displayToast = async (type, title) => {
+        $.toast({
+            title: title,
+            type: type,
+            delay: 5000
+        });
+    }
+    const saveDeviceData = async (formData) => {
+        console.log('saveStagedData', formData)
+        $.ajax({
+            url: '/device-groups/{{device.deviceGroup}}/devices/{{device.id}}/edit',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData)
+        }).done(async function (data) {
+            console.log('Saved config res: ' + data)
+            await displayToast('success', 'Device config saved')
+        }).fail(async function (error) {
+            console.log('Error saving staged config', error)
+            await displayToast('error', 'Error saving device config')
+        })
+    }
+    const getFormData = async () => {
+        let data = {
+            envs: []
+        }
+        $('.table-envs tr.row-env').each(function (i, row) {
+            let key = $(row).find('.env-key').val()
+            let value = $(row).find('.env-value').val()
+            console.log('env', key, value)
+            data.envs.push({ key: key, value: value })
+        })
+        return data
+    }
+
+    const unbindFormValidation = async () => {
+        let bootstrapValidator = $('.device-data').data('bootstrapValidator')
+        if (bootstrapValidator !== undefined) {
+            try {
+                bootstrapValidator.destroy()
+            }
+            catch (error) {
+                console.error('bootstrapValidator destroy', error);
+            }
+            try {
+                $('.device-data').data('bootstrapValidator', null)
+            }
+            catch (error) {
+                console.error('bootstrapValidator null', error);
+            }
+        }
+    }
+    const bindFormValidation = async () => {
+        console.log('bindFormValidation')
+
+        $('.device-data').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                envKey: {
+                    selector: '.env-key',
+                    message: 'The key is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The key is required and cannot be empty'
+                        }
+                    }
+                },
+                envValue: {
+                    selector: '.env-value',
+                    message: 'The value is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: 'The value is required and cannot be empty'
+                        }
+                    }
+                }
+            }
+        }).on('success.form.bv', async function (e) {
+            e.preventDefault();
+            let formData = await getFormData()
+            console.log('Form valid and submitted', formData)
+            await saveDeviceData(formData)
+        })
+
+    }
+    const bindEnvAdd = async () => {
+        $('.env-add').click(async function () {
+            await unbindFormValidation()
+            let row = $('<tr class="row-env">')
+            let cols = ''
+            cols += '<td><div class="form-group"><input type="text" class="form-control env-key" value="" placeholder="Key" /></div></td>'
+            cols += '<td><div class="form-group"><input type="text" class="form-control env-value" value="" placeholder="Value" /></div></td>'
+            cols += '<td><input type="button" class="btn btn-md btn-danger env-remove" value="Delete"></td>'
+            row.append(cols)
+            $('table.table-envs').append(row)
+            await bindEnvRemove()
+            await bindFormValidation()
+        })
+    }
+    const bindEnvRemove = async () => {
+        $(".env-remove").unbind()
+        $(".env-remove").click(async function () {
+            await unbindFormValidation()
+            $(this).closest('tr').remove()
+            await bindFormValidation()
+        })
+    }
+    $('document').ready(async function () {
+        console.log('ready')
+        await bindEnvAdd()
+        await bindEnvRemove()
+        await bindFormValidation()
+    })
 </script>

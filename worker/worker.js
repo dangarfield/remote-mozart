@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const PropertiesReader = require('properties-reader')
 const axios = require('axios')
@@ -69,8 +69,8 @@ const keepAliveTimer = async () => {
     await checkInWithServer()
   }, 1000 * 60)
 }
-const downloadRequired = async (deployedVersion, deviceGroup) => {
-  let required = deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined || deviceGroup.deployed.version !== deployedVersion
+const downloadRequired = async (deployedVersion, deviceGroup, deployedOverrideVersion, device) => {
+  let required = deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined || deviceGroup.deployed.version !== deployedVersion || device.version === undefined || device.version !== deployedOverrideVersion
   console.log('downloadRequired', deployedVersion, deviceGroup, required)
   return required
 }
@@ -79,11 +79,13 @@ const createJobDirectory = async (version) => {
   let jobDirectory = path.join(JOB_DIRECTORY, version.toString())
   if(!fs.existsSync(jobDirectory)) {
     fs.mkdirSync(jobDirectory)
+  } else {
+    fs.emptyDirSync(jobDirectory)
   }
   return jobDirectory
 }
-const downloadJobFiles = async (jobDirectory, zipPath, deviceGroupId) => {
-  const url = config.MASTER_URL + '/api/device-groups/'+deviceGroupId+'/download'
+const downloadJobFiles = async (jobDirectory, zipPath, deviceGroupId, deviceId) => {
+  const url = config.MASTER_URL + '/api/device-groups/'+deviceGroupId+'/devices/'+deviceId+'/download'
   console.log('downloadJobFiles', deviceGroupId, url)
 
   const zipWriter = fs.createWriteStream(zipPath)
@@ -139,17 +141,17 @@ const checkInWithServer = async () => {
     let data = response.data
     console.log('data', data)
 
-    if(!await downloadRequired(checkInData.version, data.deviceGroup)) {
+    if(!await downloadRequired(checkInData.version, data.deviceGroup, checkInData.overrideVersion, data.device)) {
       console.log('Download not required - Deployed version is the latest')
       return
     }
     let deployData = data.deviceGroup.deployed
     let jobDirectory = await createJobDirectory(deployData.version)
     const zipPath = path.join(jobDirectory, 'files.zip')
-    await downloadJobFiles(jobDirectory, zipPath, data.deviceGroup.id)
+    await downloadJobFiles(jobDirectory, zipPath, data.deviceGroup.id, data.device.id)
     await unzipJobFiles(jobDirectory, zipPath)
     await triggerDeployEvent(deployData.version)
-    await updateVersions(deployData.version, deployData.overrideVersion)
+    await updateVersions(deployData.version, data.device.version)
     await checkInWithServer()
   } catch (error) {
     console.error('checkInWithServer ERROR', error)

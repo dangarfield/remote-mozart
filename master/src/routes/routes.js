@@ -32,6 +32,9 @@ router.get('/device-groups/:id/edit', pageController.editDeviceGroup)
 router.post('/device-groups/:id/edit', pageController.saveStagedDeviceGroupConfig)
 router.post('/device-groups/:id/deploy', pageController.deployStagedDeviceConfig)
 router.post('/device-groups/:id/copy', pageController.copyDeviceConfigFromDeployedToStaged)
+router.post('/device-groups/:id/delete-staged', pageController.deleteStagedConfig)
+router.get('/device-groups/:deviceGroupId/devices/:deviceId/edit', pageController.editDevice)
+router.post('/device-groups/:deviceGroupId/devices/:deviceId/edit', pageController.saveDeviceConfig)
 
 
 // INSTALLATION API
@@ -39,7 +42,7 @@ router.get('/api/mozart_run.sh', catchAsyncErrors(installController.installFile)
 
 // DEVICE API
 router.post('/api/check-in', catchAsyncErrors(devicesController.checkIn))
-router.get('/api/device-groups/:id/download', pageController.downloadLatestFiles)
+router.get('/api/device-groups/:deviceGroupId/devices/:deviceId/download', pageController.downloadLatestFiles)
 
 // GENERAL API
 router.get('/api/device-groups', catchAsyncErrors(devicesController.getAllDeviceGroups))

@@ -18,15 +18,15 @@ exports.getAllDevicesForDeviceGroup = async (group) => {
 exports.getDevice = async (id) => {
   return devicesDAO.getDeviceById(id)
 }
-exports.checkIn = async (deviceId, deviceGroupId, deployedVersion) => {
-  console.log('checkIn', deviceId, deviceGroupId, deployedVersion)
+exports.checkIn = async (deviceId, deviceGroupId, deployedVersion, deployedOverrideVersion) => {
+  console.log('checkIn', deviceId, deviceGroupId, deployedVersion, deployedOverrideVersion)
 
   // Get device groups
   let deviceGroup = await checkInAndGetDeviceGroup(deviceGroupId)
   console.log('deviceGroup', deviceGroup)
 
   // Get device
-  let device = await checkInAndGetDevice(deviceId, deviceGroupId, deployedVersion)
+  let device = await checkInAndGetDevice(deviceId, deviceGroupId, deployedVersion, deployedOverrideVersion)
   console.log('device', device)
   return device
 }
@@ -40,13 +40,13 @@ const checkInAndGetDeviceGroup = async (deviceGroupId) => {
   return deviceGroup
 }
 
-const checkInAndGetDevice = async (deviceId, deviceGroupId, deployedVersion) => {
+const checkInAndGetDevice = async (deviceId, deviceGroupId, deployedVersion, deployedOverrideVersion) => {
   let device = await devicesDAO.getDeviceById(deviceId)
   if (device == null) {
-    await devicesDAO.insertDevice(deviceId, deviceGroupId, deployedVersion)
+    await devicesDAO.insertDevice(deviceId, deviceGroupId, deployedVersion, deployedOverrideVersion)
     device = await devicesDAO.getDeviceById(deviceId)
   } else {
-    await devicesDAO.updateCheckIn(deviceId, deployedVersion)
+    await devicesDAO.updateCheckIn(deviceId, deployedVersion, deployedOverrideVersion)
     device = await devicesDAO.getDeviceById(deviceId)
   }
 
@@ -90,6 +90,17 @@ exports.saveStagedDeviceGroupConfig = async (id, run, stop, envs, files) => {
   }
 
   await deviceGroupsDAO.saveDeviceGroup(deviceGroup)
+}
+
+exports.saveDeviceConfig = async (id, envs) => {
+  console.log('saveDeviceConfig', id, envs)
+  let device = await devicesDAO.getDeviceById(id)
+  device.envs = envs
+  if(device.version === undefined) {
+    device.version = 0
+  }
+  device.version++
+  await devicesDAO.saveDevice(device)
 }
 
 exports.deployStagedDeviceConfig = async (id) => {
@@ -142,4 +153,22 @@ exports.copyDeviceConfigFromDeployedToStaged = async (id) => {
   delete deviceGroup.staged.version
   await deviceGroupsDAO.saveDeviceGroup(deviceGroup)
   return {success: true}
+}
+exports.deleteStagedConfig = async (id) => {
+  let deviceGroup = await deviceGroupsDAO.getDeviceGroupById(id)
+
+  if (deviceGroup.staged !== undefined && deviceGroup.staged.files !== undefined) {
+    for (let i = 0; i < deviceGroup.staged.files.length; i++) {
+      const existingFileId = deviceGroup.staged.files[i]
+      await documentsService.deleteDocument(existingFileId)
+    }
+  }
+  delete deviceGroup.staged
+  console.log('deleteStagedConfig', deviceGroup)
+  await deviceGroupsDAO.saveDeviceGroup(deviceGroup, ['staged'])
+  return {success: true}
+}
+
+exports.getDeviceCountForDeviceGroup = async (deviceGroupId) => {
+  return devicesDAO.getDeviceCountForDeviceGroup(deviceGroupId)
 }

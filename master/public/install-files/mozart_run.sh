@@ -56,6 +56,7 @@ cd $scripts_folder
 pkill -f "fswatch -0 ./$event_file"
 cd ..
 docker stop remozart-${DEVICE_NAME}
+docker rm remozart-${DEVICE_NAME}
 EOM
 }
 install_exec_script() {
@@ -206,3 +207,5 @@ install() {
 install
 
 # curl -sLOS http://localhost:3000/api/mozart_run.sh && . ./mozart_run.sh
+
+# curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
