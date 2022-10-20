@@ -166,7 +166,7 @@ const getDeviceDTO = async (device, deviceGroup) => {
   }
 
   // Deployed version
-  console.log('deployedVersionStatus', deviceGroup.deployed.version, device.deployedVersion)
+  console.log('deployedVersionStatus', deviceGroup.deployed, device.deployedVersion)
   if (deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined) {
     device.deployedVersionStatus = 'good'
   } else {

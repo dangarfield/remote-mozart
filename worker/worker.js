@@ -4,7 +4,6 @@ const PropertiesReader = require('properties-reader')
 const axios = require('axios')
 const extract = require('extract-zip')
 
-
 const PERSISTED_CONFIG_FILE = '/.mozart/.deploy_version'
 const JOB_DIRECTORY = '/.mozart/jobs'
 const EVENT_FILE = '/.mozart/mozart_event.txt'
@@ -30,16 +29,16 @@ const validateConfig = async () => {
       process.exit(1)
     }
   })
-  if(!fs.existsSync(PERSISTED_CONFIG_FILE)) {
+  if (!fs.existsSync(PERSISTED_CONFIG_FILE)) {
     await savePersistedConfig()
   } else {
     let persistedConfigReader = PropertiesReader(PERSISTED_CONFIG_FILE)
     let persistedDeployedVersion = persistedConfigReader.get('DEPLOYED_VERSION')
-    if(persistedDeployedVersion !== null) {
+    if (persistedDeployedVersion !== null) {
       persistedConfig.DEPLOYED_VERSION = persistedDeployedVersion
     }
     let persistedOverrideVersion = persistedConfigReader.get('OVERRIDE_VERSION')
-    if(persistedOverrideVersion !== null) {
+    if (persistedOverrideVersion !== null) {
       persistedConfig.OVERRIDE_VERSION = persistedOverrideVersion
     }
   }
@@ -49,8 +48,8 @@ const validateConfig = async () => {
 
 const savePersistedConfig = async () => {
   let configToBeSaved = ''
-  configToBeSaved = configToBeSaved + 'DEPLOYED_VERSION='+persistedConfig.DEPLOYED_VERSION+'\n'
-  configToBeSaved = configToBeSaved + 'OVERRIDE_VERSION='+persistedConfig.OVERRIDE_VERSION
+  configToBeSaved = configToBeSaved + 'DEPLOYED_VERSION=' + persistedConfig.DEPLOYED_VERSION + '\n'
+  configToBeSaved = configToBeSaved + 'OVERRIDE_VERSION=' + persistedConfig.OVERRIDE_VERSION
   fs.writeFileSync(PERSISTED_CONFIG_FILE, configToBeSaved)
 }
 
@@ -70,6 +69,7 @@ const keepAliveTimer = async () => {
   }, 1000 * 60)
 }
 const downloadRequired = async (deployedVersion, deviceGroup, deployedOverrideVersion, device) => {
+  console.log('downloadRequired', deployedVersion, deviceGroup, deployedOverrideVersion, device)
   let required = deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined || deviceGroup.deployed.version !== deployedVersion || device.version === undefined || device.version !== deployedOverrideVersion
   console.log('downloadRequired', deployedVersion, deviceGroup, required)
   return required
@@ -77,7 +77,7 @@ const downloadRequired = async (deployedVersion, deviceGroup, deployedOverrideVe
 
 const createJobDirectory = async (version) => {
   let jobDirectory = path.join(JOB_DIRECTORY, version.toString())
-  if(!fs.existsSync(jobDirectory)) {
+  if (!fs.existsSync(jobDirectory)) {
     fs.mkdirSync(jobDirectory)
   } else {
     fs.emptyDirSync(jobDirectory)
@@ -85,7 +85,7 @@ const createJobDirectory = async (version) => {
   return jobDirectory
 }
 const downloadJobFiles = async (jobDirectory, zipPath, deviceGroupId, deviceId) => {
-  const url = config.MASTER_URL + '/api/device-groups/'+deviceGroupId+'/devices/'+deviceId+'/download'
+  const url = config.MASTER_URL + '/api/device-groups/' + deviceGroupId + '/devices/' + deviceId + '/download'
   console.log('downloadJobFiles', deviceGroupId, url)
 
   const zipWriter = fs.createWriteStream(zipPath)
@@ -99,26 +99,24 @@ const downloadJobFiles = async (jobDirectory, zipPath, deviceGroupId, deviceId) 
     zipWriter.on('finish', resolve)
     zipWriter.on('error', reject)
   })
-
 }
 const unzipJobFiles = async (jobDirectory, zipPath) => {
   console.log('unzipJobFiles', jobDirectory, zipPath)
   return new Promise((resolve, reject) => {
     extract(zipPath, {dir: jobDirectory}, function (err) {
-      if(err) {
-        console.log('error unzipping',err)
+      if (err) {
+        console.log('error unzipping', err)
         resolve()
       } else {
         console.log('unzip complete')
         fs.unlinkSync(zipPath)
         resolve()
       }
-     })
+    })
   })
-
 }
 const triggerDeployEvent = async (version) => {
-  let eventData = 'deploy\n'+version
+  let eventData = 'deploy\n' + version
   console.log('triggerDeployEvent', eventData)
   fs.writeFileSync(EVENT_FILE, eventData)
 }
@@ -141,7 +139,7 @@ const checkInWithServer = async () => {
     let data = response.data
     console.log('data', data)
 
-    if(!await downloadRequired(checkInData.version, data.deviceGroup, checkInData.overrideVersion, data.device)) {
+    if (!await downloadRequired(checkInData.version, data.deviceGroup, checkInData.overrideVersion, data.device)) {
       console.log('Download not required - Deployed version is the latest')
       return
     }
