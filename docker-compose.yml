@@ -2,8 +2,8 @@ version: "3"
 services:
   worker:
     image: dangarfield/docker-mozart-worker:latest
-    # depends_on:
-    #   - master
+    depends_on:
+      - master
     volumes:
       - ./example/.mozart:/.mozart:cached
     environment:
