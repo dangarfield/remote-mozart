@@ -47,20 +47,22 @@ const validateConfig = async () => {
 }
 
 const savePersistedConfig = async () => {
+  let jobDirectory = path.join(JOB_DIRECTORY)
+  fs.ensureDirSync(jobDirectory)
   let configToBeSaved = ''
   configToBeSaved = configToBeSaved + 'DEPLOYED_VERSION=' + persistedConfig.DEPLOYED_VERSION + '\n'
   configToBeSaved = configToBeSaved + 'OVERRIDE_VERSION=' + persistedConfig.OVERRIDE_VERSION
   fs.writeFileSync(PERSISTED_CONFIG_FILE, configToBeSaved)
 }
 
-const setDeployedVersion = async (newVersion) => {
-  persistedConfig.DEPLOYED_VERSION = newVersion
-  await savePersistedConfig()
-}
-const setOverrideVersion = async (newVersion) => {
-  persistedConfig.DEPLOYED_VERSION = newVersion
-  await savePersistedConfig()
-}
+// const setDeployedVersion = async (newVersion) => {
+//   persistedConfig.DEPLOYED_VERSION = newVersion
+//   await savePersistedConfig()
+// }
+// const setOverrideVersion = async (newVersion) => {
+//   persistedConfig.DEPLOYED_VERSION = newVersion
+//   await savePersistedConfig()
+// }
 const keepAliveTimer = async () => {
   let i = 0
   setInterval(async () => {
@@ -69,14 +71,42 @@ const keepAliveTimer = async () => {
   }, 1000 * 60)
 }
 const downloadRequired = async (deployedVersion, deviceGroup, deployedOverrideVersion, device) => {
-  console.log('downloadRequired', deployedVersion, deviceGroup, deployedOverrideVersion, device)
-  let required = deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined || deviceGroup.deployed.version !== deployedVersion || device.version === undefined || device.version !== deployedOverrideVersion
-  console.log('downloadRequired', deployedVersion, deviceGroup, required)
-  return required
+  console.log('downloadRequired deployedVersion', deployedVersion)
+  console.log('downloadRequired deviceGroup', deviceGroup)
+  console.log('downloadRequired deployedOverrideVersion', deployedOverrideVersion)
+  console.log('downloadRequired device', device)
+  // let required = deviceGroup.deployed === undefined || deviceGroup.deployed.version === undefined || deviceGroup.deployed.version !== deployedVersion ||
+  //  device.deployedVersion === undefined || device.deployedVersion !== deployedOverrideVersion
+  if (deviceGroup.deployed === undefined) {
+    console.log('downloadRequired', 'deviceGroup.deployed === undefined')
+    return true
+  }
+  if (deviceGroup.deployed.version === undefined) {
+    console.log('downloadRequired', 'deviceGroup.deployed.version === undefined')
+    return true
+  }
+
+  if (deviceGroup.deployed.version !== deployedVersion) {
+    console.log('downloadRequired', 'deviceGroup.deployed.version !== deployedVersion', deviceGroup.deployed.version, deployedVersion)
+    return true
+  }
+
+  if (device.deployedVersion === undefined) {
+    console.log('downloadRequired', 'device.deployedVersion === undefined')
+    return true
+  }
+  if (device.deployedVersion !== deployedOverrideVersion && deployedOverrideVersion > 0) {
+    console.log('downloadRequired', 'device.deployedVersion !== deployedOverrideVersion', device.deployedVersion, deployedOverrideVersion)
+    return true
+  }
+
+  console.log('downloadRequired', 'false')
+  return false
 }
 
 const createJobDirectory = async (version) => {
   let jobDirectory = path.join(JOB_DIRECTORY, version.toString())
+  fs.ensureDirSync(jobDirectory)
   if (!fs.existsSync(jobDirectory)) {
     fs.mkdirSync(jobDirectory)
   } else {
@@ -121,8 +151,9 @@ const triggerDeployEvent = async (version) => {
   fs.writeFileSync(EVENT_FILE, eventData)
 }
 const updateVersions = async (version, overrideVersion) => {
-  persistedConfig.DEPLOYED_VERSION = version
-  persistedConfig.OVERRIDE_VERSION = overrideVersion
+  console.log('updateVersions', version, overrideVersion)
+  persistedConfig.DEPLOYED_VERSION = version || 0
+  persistedConfig.OVERRIDE_VERSION = overrideVersion || 0
   await savePersistedConfig()
 }
 const checkInWithServer = async () => {
@@ -137,7 +168,7 @@ const checkInWithServer = async () => {
     console.log('checkInData', checkInData)
     let response = await axios.post(config.MASTER_URL + '/api/check-in', checkInData)
     let data = response.data
-    console.log('data', data)
+    console.log('checkInResponse', data)
 
     if (!await downloadRequired(checkInData.version, data.deviceGroup, checkInData.overrideVersion, data.device)) {
       console.log('Download not required - Deployed version is the latest')
